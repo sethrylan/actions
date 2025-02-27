@@ -24,27 +24,19 @@ runs:
 
           async function getAllMembers(org) {
             const members = [];
-            let page = 1;
-            //  octokit.paginate.iterator(octokit.rest.issues.listForRepo
-            while (true) {
-              const response = await github.rest.orgs.listMembers({
+            const memberIterator = octokit.paginate.iterator(octokit.rest.orgs.listMembers, {
                 org: org,
-                per_page: 100,
-                page: page
-              });
-
-              if (response.data.length === 0) break;
-              
+                per_page: 100
+              }
+            );
+            for await (const {data: members} of memberIterator) {
               members.push(...response.data.map(member => ({
                 login: member.login,
                 id: member.id,
                 type: member.type,
                 site_admin: member.site_admin
               })));
-              
-              page++;
-            }
-            
+            }            
             return members;
           }
           
