@@ -30,14 +30,15 @@ runs:
                 per_page: 100
               }
             );
-            for await (const {data: members} of memberIterator) {
+            for await (const response of memberIterator) {
               members.push(...response.data.map(member => ({
                 login: member.login,
                 id: member.id,
                 type: member.type,
                 site_admin: member.site_admin
               })));
-            }            
+            }
+
             return members;
           }
           
