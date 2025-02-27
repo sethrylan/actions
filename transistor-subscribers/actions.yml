@@ -1,0 +1,89 @@
+name: Transistor FM Subscribers
+description: Retrieves a list of subscribers from Transistor.fm API
+
+inputs:
+  api_key:
+    description: 'Transistor.fm API key'
+    required: true
+  show_id:
+    description: 'Transistor.fm show ID'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get Transistor subscribers
+      id: get_subscribers
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          
+          async function getAllSubscribers(apiKey, showId) {
+            const subscribers = [];
+            let page = 1;
+            const baseUrl = 'https://api.transistor.fm/v1';
+            
+            while (true) {
+              try {
+                const response = await fetch(`${baseUrl}/subscribers?show_id=${showId}&page=${page}`, {
+                  headers: {
+                    'x-api-key': apiKey,
+                    'Content-Type': 'application/json'
+                  }
+                });
+                
+                if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (!data.data || data.data.length === 0) break;
+                
+                const mappedSubscribers = data.data.map(subscriber => ({
+                  id: subscriber.id,
+                  email: subscriber.attributes.email,
+                  first_name: subscriber.attributes.first_name,
+                  last_name: subscriber.attributes.last_name,
+                  created_at: subscriber.attributes.created_at,
+                  status: subscriber.attributes.status,
+                  platform: subscriber.attributes.platform
+                }));
+                
+                subscribers.push(...mappedSubscribers);
+                
+                // Check if there are more pages
+                if (!data.meta.next_page) break;
+                
+                page++;
+              } catch (error) {
+                throw new Error(`Failed to fetch subscribers: ${error.message}`);
+              }
+            }
+            
+            return subscribers;
+          }
+          
+          try {
+            const subscribers = await getAllSubscribers(inputs.api_key, inputs.show_id);
+            
+            // Write results to a JSON file
+            fs.writeFileSync('transistor-subscribers.json', JSON.stringify({
+              total_subscribers: subscribers.length,
+              fetch_date: new Date().toISOString(),
+              subscribers: subscribers
+            }, null, 2));
+            
+            const subscriberEmails = subscribers.map(subscriber => subscriber.email).join('\n');
+            fs.writeFileSync('transistor-subscribers.txt', subscriberEmails);
+
+            console.log(`Successfully retrieved ${subscribers.length} subscribers`);
+          } catch (error) {
+            core.setFailed(`Error fetching subscribers: ${error.message}`);
+          }
+    - name: Upload subscribers list
+      uses: actions/upload-artifact@v4
+      with:
+        name: transistor-subscribers
+        path: transistor-subscribers.*
