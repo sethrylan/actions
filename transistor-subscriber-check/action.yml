@@ -77,7 +77,6 @@ runs:
                   last_name: subscriber.attributes.last_name,
                   created_at: subscriber.attributes.created_at,
                   status: subscriber.attributes.status,
-                  platform: subscriber.attributes.platform
                 })));
 
                 // Check if there are more pages
@@ -88,8 +87,8 @@ runs:
                 throw new Error(`Failed to fetch subscribers: ${error.message}`);
               }
             }
-            
-            return subscribers;
+
+            return [...new Set(subscribers)];
           }
 
           try {
