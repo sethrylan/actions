@@ -22,12 +22,12 @@ runs:
 
           async function getAllSubscribers(apiKey, showId) {
             const subscribers = [];
-            let page = 1;
+            let page = 0;
             const baseUrl = 'https://api.transistor.fm/v1';
             
             while (true) {
               try {
-                const response = await fetch(`${baseUrl}/subscribers?show_id=${showId}&page=${page}`, {
+                const response = await fetch(`${baseUrl}/subscribers?show_id=${showId}&pagination[per]=50&pagination[page]=${page}`, {
                   headers: {
                     'x-api-key': apiKey,
                     'Content-Type': 'application/json'
