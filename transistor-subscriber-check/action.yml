@@ -88,7 +88,11 @@ runs:
               }
             }
 
-            return [...new Set(subscribers)];
+            dedup = subscribers.filter(function(s, pos) {
+                return subscribers.indexOf(s) == pos;
+            })
+
+            return dedup;
           }
 
           try {
