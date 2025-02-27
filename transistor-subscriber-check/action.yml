@@ -98,7 +98,7 @@ runs:
             const subscribers = await getAllSubscribers(inputs.api_key, inputs.show_id);
 
             for (const subscriber of subscribers) {
-              if (members.some(member => member.login === subscriber.email.split('@')[0])) {
+              if (members.some(member => member.login.toLowerCase() === subscriber.email.split('@')[0].toLowerCase())) {
                 console.log(`✅ ${subscriber.email}`);
               } else {
                 console.log(`❌ ${subscriber.email}`);
