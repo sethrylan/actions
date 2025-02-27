@@ -19,8 +19,10 @@ runs:
       with:
         github-token: ${{ inputs.github_token }}
         script: |
+          const { Octokit } = require("@octokit/core");
           const fs = require('fs');
           const inputs = ${{ toJSON(inputs) }};
+          const octokit = new Octokit({ auth: inputs.github_token });
 
           async function getAllMembers(org) {
             const members = [];
@@ -53,7 +55,6 @@ runs:
           } catch (error) {
             core.setFailed(`Error fetching organization members: ${error.message}`);
           }
-
     - name: Upload members
       uses: actions/upload-artifact@v4
       with:
