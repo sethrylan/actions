@@ -42,7 +42,7 @@ runs:
                 
                 if (!data.data || data.data.length === 0) break;
                 
-                const mappedSubscribers = data.data.map(subscriber => ({
+                subscribers.push(...data.data.map(subscriber => ({
                   id: subscriber.id,
                   email: subscriber.attributes.email,
                   first_name: subscriber.attributes.first_name,
@@ -50,12 +50,10 @@ runs:
                   created_at: subscriber.attributes.created_at,
                   status: subscriber.attributes.status,
                   platform: subscriber.attributes.platform
-                }));
-                
-                subscribers.push(...mappedSubscribers);
-                
+                })));
+
                 // Check if there are more pages
-                if (!data.meta.next_page) break;
+                if (data.meta.currentPage === data.meta.totalPages) break;
                 
                 page++;
               } catch (error) {
