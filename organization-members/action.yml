@@ -55,8 +55,14 @@ runs:
           } catch (error) {
             core.setFailed(`Error fetching organization members: ${error.message}`);
           }
-    - name: Upload members
+    - name: Upload members.json
       uses: actions/upload-artifact@v4
       with:
-        name: organization-members
-        path: organization-members.*
+        name: organization-members.json
+        path: organization-members.json
+    - name: Upload members.txt
+      uses: actions/upload-artifact@v4
+      with:
+        name: organization-members.txt
+        path: organization-members.txt
+
