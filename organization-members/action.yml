@@ -1,0 +1,67 @@
+name: Organization members
+description: Outputs a list of organization members
+
+inputs:
+  github_token:
+    description: 'GitHub token to use query for organization members'
+    required: true
+    default: ${{ github.token }}
+  organization:
+    description: 'Organization to query for members'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get organization members
+      id: get_members
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+
+          async function getAllMembers(org) {
+            const members = [];
+            let page = 1;
+
+            while (true) {
+              const response = await github.rest.orgs.listMembers({
+                org: org,
+                per_page: 100,
+                page: page
+              });
+
+              if (response.data.length === 0) break;
+              
+              members.push(...response.data.map(member => ({
+                login: member.login,
+                id: member.id,
+                type: member.type,
+                site_admin: member.site_admin
+              })));
+              
+              page++;
+            }
+            
+            return members;
+          }
+          
+          try {
+            const members = await getAllMembers(inputs.organization);
+            
+            // Write results to a JSON file
+            fs.writeFileSync('organization-members.json', JSON.stringify(members, null, 2));
+
+            const logins = members.map(member => member.login).join('\n');
+            fs.writeFileSync('organization-members.txt', logins);
+
+            console.log(`Successfully retrieved ${members.length} organization members`);
+          } catch (error) {
+            core.setFailed(`Error fetching organization members: ${error.message}`);
+          }
+
+    - name: Upload members
+      uses: actions/upload-artifact@v4
+      with:
+        name: organization-members
+        path: organization-members.*
