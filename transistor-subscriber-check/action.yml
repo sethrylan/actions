@@ -1,0 +1,118 @@
+name: Transistor FM Subscribers Check
+description: Checks subscribers with organization membership
+
+inputs:
+  api_key:
+    description: 'Transistor.fm API key'
+    required: true
+  show_id:
+    description: 'Transistor.fm show ID'
+    required: true
+  github_token:
+    description: 'GitHub token to use query for organization members'
+    required: true
+    default: ${{ github.token }}
+  organization:
+    description: 'Organization to query for members'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get Transistor subscribers
+      id: get_subscribers
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const inputs = ${{ toJSON(inputs) }};
+          const octokit = github;
+
+          async function getAllMembers(org) {
+            const members = [];
+            const memberIterator = octokit.paginate.iterator(octokit.rest.orgs.listMembers, {
+                org: org,
+                per_page: 100
+              }
+            );
+            for await (const response of memberIterator) {
+              members.push(...response.data.map(member => ({
+                login: member.login,
+                id: member.id,
+                type: member.type,
+                site_admin: member.site_admin
+              })));
+            }
+
+            return members;
+          }
+
+          async function getAllSubscribers(apiKey, showId) {
+            const subscribers = [];
+            let page = 0;
+            const baseUrl = 'https://api.transistor.fm/v1';
+            
+            while (true) {
+              try {
+                const response = await fetch(`${baseUrl}/subscribers?show_id=${showId}&pagination[per]=50&pagination[page]=${page}`, {
+                  headers: {
+                    'x-api-key': apiKey,
+                    'Content-Type': 'application/json'
+                  }
+                });
+                
+                if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (!data.data || data.data.length === 0) break;
+                
+                subscribers.push(...data.data.map(subscriber => ({
+                  id: subscriber.id,
+                  email: subscriber.attributes.email,
+                  first_name: subscriber.attributes.first_name,
+                  last_name: subscriber.attributes.last_name,
+                  created_at: subscriber.attributes.created_at,
+                  status: subscriber.attributes.status,
+                  platform: subscriber.attributes.platform
+                })));
+
+                // Check if there are more pages
+                if (data.meta.currentPage === data.meta.totalPages) break;
+                
+                page++;
+              } catch (error) {
+                throw new Error(`Failed to fetch subscribers: ${error.message}`);
+              }
+            }
+            
+            return subscribers;
+          }
+
+          try {
+            const members = await getAllMembers(inputs.organization);
+            const subscribers = await getAllSubscribers(inputs.api_key, inputs.show_id);
+
+            for (const subscriber of subscribers) {
+              if (members.some(member => member.login === subscriber.email.split('@')[0])) {
+                console.log(`✅ ${subscriber.email}`);
+              } else {
+                console.log(`❌ ${subscriber.email}`);
+                core.setFailed(`${subscriber.email} is not a member of the organization`);
+              }
+            }
+          } catch (error) {
+            core.setFailed(`Error fetching organization members: ${error.message}`);
+          }
+    - name: Upload subscribers list
+      uses: actions/upload-artifact@v4
+      with:
+        name: transistor-subscribers.json
+        path: transistor-subscribers.json
+    - name: Upload subscribers emails
+      uses: actions/upload-artifact@v4
+      with:
+        name: transistor-subscribers.txt
+        path: transistor-subscribers.txt
