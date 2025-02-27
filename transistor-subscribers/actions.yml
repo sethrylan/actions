@@ -85,5 +85,10 @@ runs:
     - name: Upload subscribers list
       uses: actions/upload-artifact@v4
       with:
-        name: transistor-subscribers
-        path: transistor-subscribers.*
+        name: transistor-subscribers.json
+        path: transistor-subscribers.json
+    - name: Upload subscribers emails
+      uses: actions/upload-artifact@v4
+      with:
+        name: transistor-subscribers.txt
+        path: transistor-subscribers.txt
