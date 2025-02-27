@@ -49,7 +49,7 @@ runs:
           }
 
           async function getAllSubscribers(apiKey, showId) {
-            const subscribers = [];
+            const subscribers = {};
             let page = 0;
             const baseUrl = 'https://api.transistor.fm/v1';
             
@@ -70,14 +70,16 @@ runs:
                 
                 if (!data.data || data.data.length === 0) break;
                 
-                subscribers.push(...data.data.map(subscriber => ({
-                  id: subscriber.id,
-                  email: subscriber.attributes.email,
-                  first_name: subscriber.attributes.first_name,
-                  last_name: subscriber.attributes.last_name,
-                  created_at: subscriber.attributes.created_at,
-                  status: subscriber.attributes.status,
-                })));
+                for (const subscriber of data.data) {
+                  subscribers[subscriber.attributes.email] = {
+                    id: subscriber.id,
+                    email: subscriber.attributes.email,
+                    first_name: subscriber.attributes.first_name,
+                    last_name: subscriber.attributes.last_name,
+                    created_at: subscriber.attributes.created_at,
+                    status: subscriber.attributes.status,
+                  };
+                }
 
                 // Check if there are more pages
                 if (data.meta.currentPage === data.meta.totalPages) break;
@@ -88,11 +90,7 @@ runs:
               }
             }
 
-            dedup = subscribers.filter(function(s, pos) {
-                return subscribers.indexOf(s) == pos;
-            })
-
-            return dedup;
+            return Object.values(subscribers);
           }
 
           try {
