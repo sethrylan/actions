@@ -18,7 +18,8 @@ runs:
       with:
         script: |
           const fs = require('fs');
-          
+          const inputs = ${{ toJSON(inputs) }};
+
           async function getAllSubscribers(apiKey, showId) {
             const subscribers = [];
             let page = 1;
