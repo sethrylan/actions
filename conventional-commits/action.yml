@@ -1,0 +1,36 @@
+name: conv-comments
+description: Checks that the PR title conforms to conventional commits
+
+inputs:
+  github_token:
+    description: 'GitHub token to use for checking the PR title; defaults to GITHUB_TOKEN'
+    required: true
+    default: ${{ github.token }}
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+    - uses: amannn/action-semantic-pull-request@0723387faaf9b38adef4775cd42cfd5155ed6017
+      id: lint_pr_title
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+      with:
+        wip: true
+    - uses: marocchino/sticky-pull-request-comment@52423e01640425a022ef5fd42c6fb5f633a02728
+      # Even if the lint_pr_title step fails, we should populate error message.
+      if: always() && (steps.lint_pr_title.outputs.error_message != null)
+      with:
+        header: pr-title-lint
+        message: |
+          This repo requires all pull request titles to follow [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/) and it looks like your proposed title needs to be adjusted.
+
+          ```
+          ${{ steps.lint_pr_title.outputs.error_message }}
+          ```
+    # Delete the comment when the issue has been resolved
+    - if: ${{ steps.lint_pr_title.outputs.error_message == null }}
+      uses: marocchino/sticky-pull-request-comment@52423e01640425a022ef5fd42c6fb5f633a02728
+      with:
+        header: pr-title-lint
+        delete: true
