@@ -25,3 +25,22 @@ jobs:
     steps:
       - uses: sethrylan/actions/conventional-commits@main
 ```
+
+
+## `transistor-subscribers`
+
+Checks if every transistor subscriber to a show is a GitHub organization member.
+
+```yaml
+jobs:
+  check-org-members:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: sethrylan/actions/transistor-subscriber-check@main
+        with:
+          github_token: ${{ secrets.ORG_PAT }}
+          api_key: ${{ secrets.TRANSISTOR_API_KEY }}
+          show_id: my-show-id
+          organization: my-org-id
+```
