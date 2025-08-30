@@ -3,8 +3,9 @@
 
 version: 2
 updates:
+  # Monitor conventional-commits action
   - package-ecosystem: "github-actions"
-    directory: "."
+    directory: "/conventional-commits"
     schedule:
       interval: "weekly"
     commit-message:
@@ -12,18 +13,36 @@ updates:
     labels:
       - "dependencies"
       - "github-actions"
-    # Group updates for the same action across different workflows
-    groups:
-      actions-group:
-        patterns:
-          - "actions/*"
-        update-types:
-          - "minor"
-          - "patch"
-      checkout-group:
-        patterns:
-          - "actions/checkout"
-        update-types:
-          - "major"
-          - "minor"
-          - "patch"
+    
+  # Monitor organization-members action
+  - package-ecosystem: "github-actions"
+    directory: "/organization-members"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    
+  # Monitor transistor-subscriber-check action
+  - package-ecosystem: "github-actions"
+    directory: "/transistor-subscriber-check"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    
+  # Monitor transistor-subscribers action
+  - package-ecosystem: "github-actions"
+    directory: "/transistor-subscribers"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore"
+    labels:
+      - "dependencies"
+      - "github-actions"
