@@ -1,0 +1,29 @@
+# Dependabot configuration for GitHub Actions
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    # Group updates for the same action across different workflows
+    groups:
+      actions-group:
+        patterns:
+          - "actions/*"
+        update-types:
+          - "minor"
+          - "patch"
+      checkout-group:
+        patterns:
+          - "actions/checkout"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
