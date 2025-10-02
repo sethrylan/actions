@@ -19,13 +19,12 @@ runs:
       with:
         github-token: ${{ inputs.github_token }}
         script: |
-          const octokit = github;
           const fs = require('fs');
           const inputs = ${{ toJSON(inputs) }};
 
           async function getAllMembers(org) {
             const members = [];
-            const memberIterator = octokit.paginate.iterator(octokit.rest.orgs.listMembers, {
+            const memberIterator = github.paginate.iterator(github.rest.orgs.listMembers, {
                 org: org,
                 per_page: 100
               }

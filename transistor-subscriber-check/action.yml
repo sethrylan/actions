@@ -27,11 +27,10 @@ runs:
         script: |
           const fs = require('fs');
           const inputs = ${{ toJSON(inputs) }};
-          const octokit = github;
 
           async function getAllMembers(org) {
             const members = [];
-            const memberIterator = octokit.paginate.iterator(octokit.rest.orgs.listMembers, {
+            const memberIterator = github.paginate.iterator(github.rest.orgs.listMembers, {
                 org: org,
                 per_page: 100
               }
