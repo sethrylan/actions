@@ -82,12 +82,12 @@ runs:
             core.setFailed(`Error fetching subscribers: ${error.message}`);
           }
     - name: Upload subscribers list
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: transistor-subscribers.json
         path: transistor-subscribers.json
     - name: Upload subscribers emails
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: transistor-subscribers.txt
         path: transistor-subscribers.txt
